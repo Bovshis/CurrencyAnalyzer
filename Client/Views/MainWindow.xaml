@@ -7,6 +7,9 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:viewModels="clr-namespace:Client.ViewModels"
         xmlns:models="clr-namespace:Client.Models"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:resources="clr-namespace:Client.Resources"
+        xmlns:enums="clr-namespace:Client.Resources.Enums"
         mc:Ignorable="d"
         Title="CurrencyAnalyzer" Height="450" Width="800">
     <Window.DataContext>
@@ -16,6 +19,15 @@
             </ObjectDataProvider.ConstructorParameters>
         </ObjectDataProvider>
     </Window.DataContext>
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="DataFromEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="enums:Currency"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
@@ -30,16 +42,12 @@
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
-            <DatePicker Grid.Column="0" VerticalAlignment="Center" Name="datePicker1" SelectedDateFormat="Short" />
+            <DatePicker Grid.Column="0" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding StartDate}"/>
             <Label Grid.Column="1" VerticalAlignment="Center">-</Label>
-            <DatePicker Grid.Column="2" VerticalAlignment="Center" Name="datePicker2" SelectedDateFormat="Short" />
+            <DatePicker Grid.Column="2" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding EndDate}"/>
             <Label Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">Currency:</Label>
-            <ComboBox Grid.Column="4" Margin="5">
-                <ComboBoxItem HorizontalAlignment="Center" VerticalAlignment="Center">USD</ComboBoxItem>
-                <ComboBoxItem HorizontalAlignment="Center" VerticalAlignment="Center">EUR</ComboBoxItem>
-                <ComboBoxItem HorizontalAlignment="Center" VerticalAlignment="Center">RUB</ComboBoxItem>
-            </ComboBox>
-            <Button Grid.Column="5" Margin="7">Get</Button>
+            <ComboBox Grid.Column="4" Margin="5" ItemsSource="{Binding Source={StaticResource DataFromEnum}}" SelectedItem="{Binding SelectedCurrency}"/>
+            <Button Grid.Column="5" Margin="7" Command="{Binding GetCurrencyRates}">Get</Button>
         </Grid>
         <oxy:PlotView Grid.Row="1" Model="{Binding Plot}"/>
     </Grid>
