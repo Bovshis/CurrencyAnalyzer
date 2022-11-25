@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System.Net.Http;
+using System.Windows;
 using Client.Models;
+using Client.Services;
 using Client.ViewModels;
 
 namespace Client.Views
@@ -9,10 +11,17 @@ namespace Client.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public MainWindow()
         {
             InitializeComponent();
-            var currencyAnalyzerModel = new CurrencyAnalyzerModel();
+            InitializeDateContext();
+        }
+
+        private void InitializeDateContext()
+        {
+            var currencyRateProvider = new CurrencyRateProvider(new HttpClient());
+            var currencyAnalyzerModel = new CurrencyAnalyzerModel(currencyRateProvider);
             var currencyAnalyzerViewModel = new CurrencyAnalyzerViewModel(currencyAnalyzerModel);
             DataContext = currencyAnalyzerViewModel;
         }

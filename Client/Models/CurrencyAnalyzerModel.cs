@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Client.Resources;
 using Client.Resources.Enums;
+using Client.Services;
 using OxyPlot;
 using OxyPlot.Series;
 
@@ -12,22 +13,21 @@ namespace Client.Models
 {
     public class CurrencyAnalyzerModel
     {
-        public CurrencyAnalyzerModel()
-        {
+        private readonly CurrencyRateProvider _currencyRateProvider;
 
+        public CurrencyAnalyzerModel(CurrencyRateProvider _currencyRateProvider)
+        {
+            this._currencyRateProvider = _currencyRateProvider;
         }
 
         public PlotModel Plot { get; private set; } = new PlotModel();
 
-        public List<Currency> Currencies { get; set; }
-
-        public void GetCurrencyRates(DateTime start, DateTime end, Currency currency)
+        public async Task GetCurrencyRates(DateTime start, DateTime end, Currency currency)
         {
+            var points = await _currencyRateProvider.GetCurrencyRate(start, end, currency);
             Plot = new PlotModel();
-            var line = new LineSeries();
-            line.Points.Add(new DataPoint(1,1));
-            line.Points.Add(new DataPoint(2,2));
-            Plot.Series.Add(line);
+            var lineSeries = new LineSeries();
+            lineSeries.Points.AddRange(points);
         }
     }
 }

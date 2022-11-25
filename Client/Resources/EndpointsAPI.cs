@@ -8,7 +8,7 @@ namespace Client.Resources
 {
     public static class EndpointsAPI
     {
-        public const string ServersBaseDevelopmentURL = "dev";
+        public const string ServersBaseDevelopmentURL = " https://localhost:7015";
         public const string ServersBaseProductionURL = "prod";
 
         public const string GetCurrencyRatesEndpoint = "currencyrate/get-currency-rates";

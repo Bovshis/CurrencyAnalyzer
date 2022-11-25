@@ -12,13 +12,6 @@
         xmlns:enums="clr-namespace:Client.Resources.Enums"
         mc:Ignorable="d"
         Title="CurrencyAnalyzer" Height="450" Width="800">
-    <Window.DataContext>
-        <ObjectDataProvider ObjectType="viewModels:CurrencyAnalyzerViewModel">
-            <ObjectDataProvider.ConstructorParameters>
-                <models:CurrencyAnalyzerModel></models:CurrencyAnalyzerModel>
-            </ObjectDataProvider.ConstructorParameters>
-        </ObjectDataProvider>
-    </Window.DataContext>
 
     <Window.Resources>
         <ObjectDataProvider x:Key="DataFromEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">

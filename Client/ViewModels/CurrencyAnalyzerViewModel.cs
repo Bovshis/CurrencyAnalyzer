@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Client.Models;
+using Client.Resources;
 using Client.Resources.Commands;
 using Client.Resources.Enums;
 using OxyPlot;
 
 namespace Client.ViewModels
 {
-    public class CurrencyAnalyzerViewModel
+    public class CurrencyAnalyzerViewModel : PropertyNotifier
     {
         private readonly CurrencyAnalyzerModel _model;
 
@@ -28,10 +29,10 @@ namespace Client.ViewModels
 
         public Currency SelectedCurrency { get; set; }
 
-        public ICommand GetCurrencyRates => new RelayCommand((_) =>
+        public ICommand GetCurrencyRates => new RelayCommand(async (_) =>
         {
-            _model.GetCurrencyRates(StartDate, EndDate, SelectedCurrency);
-            var a = 1;
+            await _model.GetCurrencyRates(StartDate, EndDate, SelectedCurrency);
+            OnPropertyChanged(nameof(Plot));
         });
     }
 }

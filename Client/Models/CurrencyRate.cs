@@ -1,6 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using Client.Resources.Enums;
 
-namespace Server.Models
+namespace Client.Models
 {
     public class CurrencyRate
     {
