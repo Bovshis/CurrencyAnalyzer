@@ -2,6 +2,7 @@
 using Server.Models;
 using Server.Models.Requests;
 using System.Threading;
+using Server.Data;
 
 namespace Server.Services
 {
@@ -11,11 +12,13 @@ namespace Server.Services
 
         private readonly IMemoryCache _cache;
         private readonly NbrbService _nbrbService;
+        private readonly MongoRepository _mongoRepository;
 
-        public CacheProvider(IMemoryCache memoryCache, NbrbService nbrbService)
+        public CacheProvider(IMemoryCache memoryCache, NbrbService nbrbService, MongoRepository mongoRepository)
         {
             _cache = memoryCache;
             _nbrbService = nbrbService;
+            _mongoRepository = mongoRepository;
         }
         public async Task<List<CurrencyRate>> GetCachedResponse(CurrencyRatesRequest request)
         {
@@ -31,6 +34,7 @@ namespace Server.Services
                 }));
             }
 
+            _mongoRepository.SaveDate();
             return rates;
         }
         private async Task<CurrencyRate> GetCachedResponse(CurrencyRateRequest currencyRateRequest)

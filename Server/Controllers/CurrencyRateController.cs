@@ -11,7 +11,7 @@ namespace Server.Controllers
     {
         private readonly CacheProvider _cacheProvider;
 
-        public CurrencyRateController(HttpClient client, CacheProvider cacheProvider)
+        public CurrencyRateController(CacheProvider cacheProvider)
         {
             _cacheProvider = cacheProvider;
         }
@@ -20,7 +20,7 @@ namespace Server.Controllers
         public async Task<ActionResult<List<CurrencyRate>>> GetCurrencyRates([FromQuery] CurrencyRatesRequest request)
         {
             List<CurrencyRate> currencyRates = await _cacheProvider.GetCachedResponse(request);
-            return Ok(null);
+            return Ok(currencyRates);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Server.Data;
 using Server.Services;
 
 namespace Server
@@ -15,6 +16,8 @@ namespace Server
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<NbrbService>();
             builder.Services.AddSingleton<CacheProvider>();
+            builder.Services.AddSingleton<MongoRepository>();
+            builder.Services.AddHostedService<SaveCacheToDbService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -35,6 +38,7 @@ namespace Server
 
             app.MapControllers();
 
+            PrepCache.PrepCurrencyRates(app);
             app.Run();
         }
     }

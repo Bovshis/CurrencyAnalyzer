@@ -11,6 +11,7 @@ using Client.Models;
 using Client.Resources;
 using Client.Resources.Enums;
 using System.Web;
+using OxyPlot.Axes;
 
 namespace Client.Services
 {
@@ -33,7 +34,9 @@ namespace Client.Services
             uriBuilder.Query = query.ToString();
 
             var response = (List<CurrencyRate>) (await _httpClient.GetFromJsonAsync(uriBuilder.ToString(), typeof(List<CurrencyRate>)))!;
-            return null;
+            return response
+                .Select(currencyRate => new DataPoint(DateTimeAxis.ToDouble(currencyRate.Date), decimal.ToDouble(currencyRate.Value)))
+                .ToList();
         }
     }
 }
