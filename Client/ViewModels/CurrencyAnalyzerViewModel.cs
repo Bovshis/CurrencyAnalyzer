@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Client.Models;
 using Client.Resources;
@@ -31,6 +32,11 @@ namespace Client.ViewModels
 
         public ICommand GetCurrencyRates => new RelayCommand(async (_) =>
         {
+            if (StartDate > EndDate)
+            {
+                MessageBox.Show("Start date can't be grater than end date!", "Error");
+                return;
+            }
             await _model.GetCurrencyRates(StartDate, EndDate, SelectedCurrency);
             OnPropertyChanged(nameof(Plot));
         });

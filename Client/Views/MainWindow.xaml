@@ -35,9 +35,17 @@
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
-            <DatePicker Grid.Column="0" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding StartDate}"/>
+            <DatePicker Grid.Column="0" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding StartDate}">
+                <DatePicker.BlackoutDates>
+                    <CalendarDateRange End="1/7/2016" />
+                </DatePicker.BlackoutDates>
+            </DatePicker>
             <Label Grid.Column="1" VerticalAlignment="Center">-</Label>
-            <DatePicker Grid.Column="2" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding EndDate}"/>
+            <DatePicker Grid.Column="2" VerticalAlignment="Center" SelectedDateFormat="Short" SelectedDate="{Binding EndDate}">
+                <DatePicker.BlackoutDates>
+                    <CalendarDateRange End="1/7/2016" />
+                </DatePicker.BlackoutDates>
+            </DatePicker>
             <Label Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">Currency:</Label>
             <ComboBox Grid.Column="4" Margin="5" ItemsSource="{Binding Source={StaticResource DataFromEnum}}" SelectedItem="{Binding SelectedCurrency}"/>
             <Button Grid.Column="5" Margin="7" Command="{Binding GetCurrencyRates}">Get</Button>
