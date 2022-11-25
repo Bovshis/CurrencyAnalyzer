@@ -2,11 +2,13 @@
 
 namespace Server.Models.Requests
 {
-    public class CurrencyRateRequest
+    public class CurrencyRatesRequest
     {
         [Required]
         public Currency Currency { get; set; }
         [Required]
-        public string Date { get; set; }
+        public string StartDate { get; set; }
+        [Required]
+        public string EndDate { get; set; }
     }
 }

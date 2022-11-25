@@ -19,10 +19,25 @@ namespace Server.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<RateShort>> GetCurrencyRates(CurrencyRateRequest currencyRateRequest)
+        public async Task<Rate> GetCurrencyRate(CurrencyRateRequest currencyRateRequest)
         {
-            var startDate = DateTime.Parse(currencyRateRequest.StartDate);
-            var endDate = DateTime.Parse(currencyRateRequest.EndDate);
+            var date = DateTime.Parse(currencyRateRequest.Date);
+            
+
+            if (date < DevaluationDate)
+            {
+                throw new ArgumentException("Can't handle date before devaluation");
+            }
+
+
+            return await _httpClient.GetFromJsonAsync<Rate>(
+                $"https://www.nbrb.by/api/exrates/rates/{currencyRateRequest.Currency}?parammode=2&ondate={currencyRateRequest.Date}") ?? throw new BadHttpRequestException("NBRB request exception");
+        }
+
+        public async Task<List<RateShort>> GetCurrencyRates(CurrencyRatesRequest currencyRatesRequest)
+        {
+            var startDate = DateTime.Parse(currencyRatesRequest.StartDate);
+            var endDate = DateTime.Parse(currencyRatesRequest.EndDate);
 
             if (startDate > endDate)
             {
@@ -36,62 +51,62 @@ namespace Server.Services
 
             if (startDate < BoundaryDate && endDate >= BoundaryDate)
             {
-                return await FindRatesFromTwoRanges(currencyRateRequest);
+                return await FindRatesFromTwoRanges(currencyRatesRequest);
             }
 
             if (startDate < BoundaryDate)
             {
-                return await FindRatesBefore(currencyRateRequest);
+                return await FindRatesBefore(currencyRatesRequest);
             }
 
-            return await FindRatesAfter(currencyRateRequest);
+            return await FindRatesAfter(currencyRatesRequest);
         }
 
-        private async Task<List<RateShort>> FindRatesAfter(CurrencyRateRequest currencyRateRequest)
+        private async Task<List<RateShort>> FindRatesAfter(CurrencyRatesRequest currencyRatesRequest)
         {
-            var url = currencyRateRequest.Currency switch
+            var url = currencyRatesRequest.Currency switch
             {
                 Currency.USD =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{UsdIds[1]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{UsdIds[1]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
                 Currency.EUR =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{EurIds[1]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{EurIds[1]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
                 Currency.RUB =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{RubIds[1]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
-                _ => throw new ArgumentException($"Can't handle currency: {currencyRateRequest.Currency}")
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{RubIds[1]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
+                _ => throw new ArgumentException($"Can't handle currency: {currencyRatesRequest.Currency}")
             };
 
             return await _httpClient.GetFromJsonAsync<List<RateShort>>(url) ?? throw new BadHttpRequestException("NBRB request exception");
         }
 
-        private async Task<List<RateShort>> FindRatesBefore(CurrencyRateRequest currencyRateRequest)
+        private async Task<List<RateShort>> FindRatesBefore(CurrencyRatesRequest currencyRatesRequest)
         {
-            var url = currencyRateRequest.Currency switch
+            var url = currencyRatesRequest.Currency switch
             {
                 Currency.USD =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{UsdIds[0]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{UsdIds[0]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
                 Currency.EUR =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{EurIds[0]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{EurIds[0]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
                 Currency.RUB =>
-                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{RubIds[0]}?parammode=2&startDate={currencyRateRequest.StartDate}&endDate={currencyRateRequest.EndDate}",
-                _ => throw new ArgumentException($"Can't handle currency: {currencyRateRequest.Currency}")
+                    $"https://www.nbrb.by/API/ExRates/Rates/Dynamics/{RubIds[0]}?parammode=2&startDate={currencyRatesRequest.StartDate}&endDate={currencyRatesRequest.EndDate}",
+                _ => throw new ArgumentException($"Can't handle currency: {currencyRatesRequest.Currency}")
             };
 
             return await _httpClient.GetFromJsonAsync<List<RateShort>>(url) ?? throw new BadHttpRequestException("NBRB request exception");
         }
 
-        private async Task<List<RateShort>> FindRatesFromTwoRanges(CurrencyRateRequest currencyRateRequest)
+        private async Task<List<RateShort>> FindRatesFromTwoRanges(CurrencyRatesRequest currencyRatesRequest)
         {
-            var beforeRates = await FindRatesBefore(new CurrencyRateRequest()
+            var beforeRates = await FindRatesBefore(new CurrencyRatesRequest()
             {
-                Currency = currencyRateRequest.Currency,
-                StartDate = currencyRateRequest.StartDate,
+                Currency = currencyRatesRequest.Currency,
+                StartDate = currencyRatesRequest.StartDate,
                 EndDate = BoundaryDate.ToString("yyyy-MM-dd"),
             });
-            var afterRates = await FindRatesAfter(new CurrencyRateRequest()
+            var afterRates = await FindRatesAfter(new CurrencyRatesRequest()
             {
-                Currency = currencyRateRequest.Currency,
+                Currency = currencyRatesRequest.Currency,
                 StartDate = BoundaryDate.ToString("yyyy-MM-dd"),
-                EndDate = currencyRateRequest.EndDate,
+                EndDate = currencyRatesRequest.EndDate,
             });
             beforeRates.AddRange(afterRates);
             return beforeRates;

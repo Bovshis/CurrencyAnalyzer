@@ -9,26 +9,18 @@ namespace Server.Controllers
     [Route("[controller]")]
     public class CurrencyRateController : ControllerBase
     {
-        private readonly HttpClient _client;
-        private readonly NbrbService _nbrbService;
+        private readonly CacheProvider _cacheProvider;
 
-        public CurrencyRateController(HttpClient client, NbrbService nbrbService)
+        public CurrencyRateController(HttpClient client, CacheProvider cacheProvider)
         {
-            _client = client;
-            _nbrbService = nbrbService;
+            _cacheProvider = cacheProvider;
         }
 
         [HttpGet("get-currency-rates")]
-        public async Task<ActionResult<List<CurrencyRate>>> GetCurrencyRates([FromQuery] CurrencyRateRequest request)
+        public async Task<ActionResult<List<CurrencyRate>>> GetCurrencyRates([FromQuery] CurrencyRatesRequest request)
         {
-            var a = await _nbrbService.GetCurrencyRates(request);
+            List<CurrencyRate> currencyRates = await _cacheProvider.GetCachedResponse(request);
             return Ok(null);
-        }
-
-        public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
-        {
-            for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
-                yield return day;
         }
     }
 }

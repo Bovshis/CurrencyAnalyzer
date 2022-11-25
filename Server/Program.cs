@@ -13,7 +13,8 @@ namespace Server
             builder.Services.AddControllers();
             builder.Services.AddMemoryCache();
             builder.Services.AddHttpClient();
-            builder.Services.AddScoped<NbrbService>();
+            builder.Services.AddSingleton<NbrbService>();
+            builder.Services.AddSingleton<CacheProvider>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

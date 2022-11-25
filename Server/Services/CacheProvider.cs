@@ -1,59 +1,70 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Server.Models;
+using Server.Models.Requests;
+using System.Threading;
 
 namespace Server.Services
 {
-    public class CacheProvider : ICacheProvider
+    public class CacheProvider
     {
         private static readonly SemaphoreSlim GetUsersSemaphore = new SemaphoreSlim(1, 1);
+
         private readonly IMemoryCache _cache;
-        public CacheProvider(IMemoryCache memoryCache)
+        private readonly NbrbService _nbrbService;
+
+        public CacheProvider(IMemoryCache memoryCache, NbrbService nbrbService)
         {
             _cache = memoryCache;
+            _nbrbService = nbrbService;
         }
-        public async Task<IEnumerable<CurrencyRate>> GetCachedResponse()
+        public async Task<List<CurrencyRate>> GetCachedResponse(CurrencyRatesRequest request)
         {
-            try
+            var rates = new List<CurrencyRate>();
+            var startDate = DateTime.Parse(request.StartDate);
+            var endDate = DateTime.Parse(request.EndDate);
+            foreach (var day in EachDay(startDate, endDate))
             {
-                return await GetCachedResponse("a", GetUsersSemaphore);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        private async Task<IEnumerable<CurrencyRate>> GetCachedResponse(string cacheKey, SemaphoreSlim semaphore)
-        {
-            /*bool isAvaiable = _cache.TryGetValue(cacheKey, out List<CurrencyRate> employees);
-            if (isAvaiable) return employees;
-            try
-            {
-                await semaphore.WaitAsync();
-                isAvaiable = _cache.TryGetValue(cacheKey, out employees);
-                if (isAvaiable) return employees;
-                employees = EmployeeService.GetEmployeesDeatilsFromDB();
-                var cacheEntryOptions = new MemoryCacheEntryOptions
+                rates.Add(await GetCachedResponse(new CurrencyRateRequest()
                 {
-                    AbsoluteExpiration = DateTime.Now.AddMinutes(5),
-                    SlidingExpiration = TimeSpan.FromMinutes(2),
-                    Size = 1024,
-                };
-                _cache.Set(cacheKey, employees, cacheEntryOptions);
+                    Currency = request.Currency,
+                    Date = day.ToString("yyyy-MM-dd"),
+                }));
             }
-            catch
+
+            return rates;
+        }
+        private async Task<CurrencyRate> GetCachedResponse(CurrencyRateRequest currencyRateRequest)
+        {
+            var cacheKey = $"{currencyRateRequest.Currency}&{currencyRateRequest.Date}";
+            var isAvailable = _cache.TryGetValue(cacheKey, out CurrencyRate? employees);
+            if (isAvailable) return employees!;
+            try
             {
-                throw;
+                await GetUsersSemaphore.WaitAsync();
+                isAvailable = _cache.TryGetValue(cacheKey, out employees);
+                if (isAvailable) return employees!;
+                Rate rate = await _nbrbService.GetCurrencyRate(currencyRateRequest);
+                employees = new CurrencyRate()
+                {
+                    Currency = Enum.Parse<Currency>(rate.Cur_Abbreviation),
+                    Date = rate.Date,
+                    Amount = rate.Cur_Scale,
+                    Value = rate.Cur_OfficialRate
+                };
+                _cache.Set(cacheKey, employees);
             }
             finally
             {
-                semaphore.Release();
+                GetUsersSemaphore.Release();
             }
-            return employees;*/
-            throw new NotImplementedException();
-        }
-    }
 
-    public interface ICacheProvider
-    {
+            return employees;
+        }
+
+        private IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+        {
+            for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+                yield return day;
+        }
     }
 }
